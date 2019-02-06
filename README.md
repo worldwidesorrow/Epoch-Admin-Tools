@@ -155,7 +155,7 @@ If you are worried about the integrity of the dll files look at the change log f
 	on the server you must add your name and player UID to both (ADMIN_LIST - ADMIN_NAMES) or (MOD_LIST - MOD_NAMES).
 	DO NOT ADD TO BOTH!
 	Note: the SuperAdmin feature adds the base manager and the ability to spawn and save buildings to the map.
-	It is currently still under development which is why it is commented out. Do not add your name and UID toggled
+	It is currently still under development which is why it is commented out. Do not add your name and UID to
 	SuperAdmin at this time.
 	
 1. Repack your server PBO.
@@ -163,9 +163,9 @@ If you are worried about the integrity of the dll files look at the change log f
 1. Copy the 3 files contained in the downloaded Battleye folder into your Battleye folder to overwrite them.
 	
 
-Keybindings
+1. Keybindings
 
-NOTE: The keys other than F2 are disabled when admin mode is turned off.
+	NOTE: The keys other than F2 are disabled when admin mode is turned off.
 
 
 	```sqf
