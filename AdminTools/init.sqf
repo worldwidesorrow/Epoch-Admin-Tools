@@ -1,10 +1,10 @@
 // Add UIDs and names of Admins and Mods Here. If an admin or mod wants to play with no admin tools, change name in profile.
 //#define SUPER_ADMIN_LIST ["76500000000000000","76500000000000000","76500000000000000"]
-//#define SUPER_ADMIN_NAMES ["JasonTM","SuperAdminName","SuperAdminName"]
-#define ADMIN_LIST ["76561198128809590","76500000000000000","76500000000000000"]
-#define ADMIN_NAMES ["JasonTM","AdminName","AdminName"]
+//#define SUPER_ADMIN_NAMES ["SuperAdminName","SuperAdminName","SuperAdminName"]
+#define ADMIN_LIST ["76500000000000000","76500000000000000","76500000000000000"]
+#define ADMIN_NAMES ["AdminName","AdminName","AdminName"]
 #define MOD_LIST ["76500000000000000","76500000000000000","76500000000000000"]
-#define MOD_NAMES ["JasonTM","ModeratorName","ModeratorName"]
+#define MOD_NAMES ["ModeratorName","ModeratorName","ModeratorName"]
 
 // These variables are used in the AI spawner. You can adjust them.
 EAT_HumanityGainLoss = 25;
