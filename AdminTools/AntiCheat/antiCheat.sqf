@@ -97,5 +97,3 @@ tk_ac = "started";
 };
 
 #include "\z\addons\dayz_server\adminTools\DebugMonitors\debugMonitor2.sqf"
-
-format["Anticheat loaded for %1",player] call dayz_rollingMessages;
