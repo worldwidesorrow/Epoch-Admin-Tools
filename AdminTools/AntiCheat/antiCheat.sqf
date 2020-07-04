@@ -1,5 +1,6 @@
 // This file is the work of ebayShopper. Modified for use with Epoch Admin Tools by JasonTM.
 
+#define MENUS [""]
 #define KICK_VARIABLES []
 #define KICK_DISPLAYS [30,                     32,              45,                     125,                       140,                    155,                   156,                    1001,               2929,               3030,					13000,		14000]
 //                    [RscDisplayTemplateLoad, RscDisplayIntel, RscDisplayArcadeMarker, RscDisplayEditDiaryRecord, RscDisplaySingleplayer, RscDisplayDSinterface, RscDisplayAddonActions, RscDisplayWFVoting, RscFunctionsViewer, RscConfigEditor_Main, EATDialog,  BaseManager]
@@ -76,7 +77,7 @@ tk_ac = "started";
 			};
 		} count KICK_VARIABLES;
 		
-		if !(commandingMenu == "") then {
+		if !(commandingMenu in MENUS) then {
 			_reason = format["CommandingMenu %1",commandingMenu];
 		};
 		
