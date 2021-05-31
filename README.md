@@ -79,18 +79,6 @@ If you are worried about the integrity of the dll files look at the change log f
 	publicVariableServer "EAT_clientToServer";
 	```
 	
-	Find the following line:
-	
-	```sqf
-	waitUntil {scriptDone progress_monitor};
-	```
-	
-	Add this line ***above** it. NOTE: this line may already be there from a prior script install.
-	
-	```sqf
-	[] execVM "dayz_code\compile\remote_message.sqf";
-	```
-	
 1. Save init.sqf
 
 1. Open file ***description.ext*** in the root of your mission folder.
@@ -119,25 +107,16 @@ If you are worried about the integrity of the dll files look at the change log f
 	#include "\z\addons\dayz_server\adminTools\init.sqf"
 	```
 	
-	Find the following block of code:
+	Find the following line:
 	
 	```sqf
-	//Buildings
-	if (_object isKindOf "DZ_buildables") then {
-		_saveObject = "DZ_buildables";
-		_allowed = true;
-	};
+	if ((typeOf _object) in DayZ_SafeObjects) then {
 	```
 	
-	Add the following block of code ***below*** it:
+	Replace it with the following line:
 	
 	```sqf
-	// EAT Buildings
-	if (_object getVariable ["EAT_Building",0] == 1) then {
-		_saveObject = "EAT_Building";
-		_object setVariable ["EAT_Building",nil];
-		_allowed = true;
-	};
+	if ((typeOf _object) in DayZ_SafeObjects || (_object getVariable ["EAT_Building",0] == 1)) then {
 	```
 	
 1. Open file ***dayz_server\AdminTools\init.sqf***

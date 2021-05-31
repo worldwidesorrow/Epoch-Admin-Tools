@@ -1,15 +1,10 @@
-// This is a centralized function for checking if an action is allowed to take place.
-// This is basically the "_canDo" found in player actions.
+/*
 EAT_fnc_actionAllowed = {
-	private["_player","_vehicle","_inVehicle","_onLadder","_canDo"];
-	_player = player; //Setting a local variable as player saves resources
-	_vehicle = vehicle _player;
-	_inVehicle = (_vehicle != _player);
-	_onLadder =	(getNumber (configFile >> "CfgMovesMaleSdr" >> "States" >> (animationState _player) >> "onLadder")) == 1;
-	_canDo = (!r_drag_sqf && !r_player_unconscious && !_onLadder && !_inVehicle);
-
-_canDo
+	local _onLadder = (getNumber (configFile >> "CfgMovesMaleSdr" >> "States" >> (animationState player) >> "onLadder")) == 1;
+	local _canDo = (!r_drag_sqf && !r_player_unconscious && !_onLadder && (vehicle player == player));
+	_canDo
 };
+*/
 
 // Generates a selectable list of players for teleports and spectate
 // Title is set by setting EAT_pMenuTitle = "TITLE HERE" before calling the function
@@ -26,25 +21,24 @@ EAT_fnc_playerSelect =
 	showCommandingMenu "#USER:_pmenu";
 };
 
-// Convert multidimensional array to single dimensional
-// Used in adminBuild
+// Convert multidimensional array to single dimensional - Used in adminBuild
 myfnc_MDarray = {
-	private ["_list","_i","_temp"];
-	_list = []; _temp = _this select 0; _i = 0;
+	local _list = [];
+	local _temp = _this select 0;
 
 	for "_i" from 0 to ((count _temp) - 1) do {
 		_list set [_i,((_temp select _i) select 2)];
 	};
-	_list;
+	_list
 };
 
 // Prints the position of the admin or a cursorTarget to the RPT
 EAT_GetPosition = {
 	private "_text";
-	_obj = _this select 0;
+	local _obj = _this select 0;
 	if(isNull _obj) exitWith {"No target" call dayz_rollingMessages;};
-	_pos = getPos _obj;
-	_dir = getDir _obj;
+	local _pos = getPos _obj;
+	local _dir = getDir _obj;
 	
 	if (isPlayer _obj) then {
 		_text = format["Position of %1 is: %3%2",name _obj,_pos,_dir];
@@ -64,34 +58,32 @@ EAT_GetPosition = {
 
 // Posts object information to system chat
 EAT_GetObjDetails = {
-	_obj = cursorTarget;
+	local _obj = cursorTarget;
 	if(isNull _obj) exitWith {"No target" call dayz_rollingMessages;};
-	_charID = _obj getVariable ["CharacterID","0"];
-	_objID 	= _obj getVariable["ObjectID","0"];
-	_objUID	= _obj getVariable["ObjectUID","0"];
-	_lastUpdate = _obj getVariable ["lastUpdate",time];
-	_owner = _obj getVariable["ownerPUID","0"];
+	local _charID = _obj getVariable ["CharacterID","0"];
+	local _objID 	= _obj getVariable["ObjectID","0"];
+	local _objUID	= _obj getVariable["ObjectUID","0"];
+	local _lastUpdate = _obj getVariable ["lastUpdate",time];
+	local _owner = _obj getVariable["ownerPUID","0"];
 		
 	systemChat format["%1: charID: %2, objID: %3, objUID: %4, Owner %5, lastUpdate: %6",typeOF _obj,_charID,_objID,_objUID,_owner,_lastUpdate];
 };
 
 // Flips the nearest land vehicle
 EAT_FlipVeh = {
-	private "_vehicle";
-	_vehicle = getPos player nearestObject "LandVehicle";
+	local _vehicle = getPos player nearestObject "LandVehicle";
 	if (isNull _vehicle) exitWith {"There are no vehicles near to flip" call dayz_rollingMessages;};
-	_vehicle setVectorUp [0, 0, 1];
-	_vehicleType = typeOf _vehicle;
-	format["Your %1 is now right-side up",_vehicleType] call dayz_rollingMessages;
+	_vehicle setVectorUp [0,0,1];
+	local _name = getText(configFile >> "cfgVehicles" >> (typeOf _vehicle) >> "displayName");
+	format ["Your %1 is now right-side up",_name] call dayz_rollingMessages;
 };
 
 // Ejects players from a vehicle
 EAT_Eject = {
-_ct = cursorTarget;
-_ctType = typeOf _ct;
+local _ct = cursorTarget;
 if(isNull _ct) exitWith {"No target" call dayz_rollingMessages;};
-if(!(_ct isKindOf "LandVehicle") && !(_ct isKindOf "Air") && !(_ct isKindOf "Ship")) exitWith {cutText ["Target not a vehicle", "PLAIN DOWN"];};
-if ((count crew _ct) < 1) exitWith {format["There are no players in the %1", _ctType] call dayz_rollingMessages;};
+if !(_ct isKindOf "AllVehicles") exitWith {"Target not a vehicle" call dayz_rollingMessages;};
+if ((count crew _ct) < 1) exitWith {format["There are no players in the %1", (getText(configFile >> "CfgVehicles" >> (typeOf _ct) >> "displayName"))] call dayz_rollingMessages;};
 _ct forceSpeed 0;
 {_x action ["Eject", _ct];} forEach crew _ct;
 uiSleep 5;
@@ -100,24 +92,22 @@ _ct forceSpeed -1;
 
 // Allows the player to glide forward quickly across the map. It is called from key bind.
 EAT_FastForward = {
-	_player = vehicle player;
-	_dis = 5;
-	_dir = getdir _player;
-	_pos = getPosATL _player;
-	_pos2 = getPos _player;
-	_z2 = _pos2 select 2;
-	_z = 0;
+	local _player = vehicle player;
+	local _dir = getdir _player;
+	local _pos = getPosATL _player;
+	local _pos2 = getPos _player;
+	local _z2 = _pos2 select 2;
+	local _z = 0;
 
-	if(_player isKindOf "Air" && _z2 < 20 && isEngineOn _player) then {_z = _z2 + 30;} else {if(_z2 > 3) then {_z = _z2;}else{if(surfaceIsWater _pos) then {_z = 2;} else {_z=0;};};};
-	_pos = [(_pos select 0)+_dis*sin(_dir),(_pos select 1)+_dis*cos(_dir),_z];
+	if (_player isKindOf "Air" && _z2 < 20 && isEngineOn _player) then {_z = _z2 + 30;} else {if (_z2 > 3) then {_z = _z2;} else {if (surfaceIsWater _pos) then {_z = 2;} else {_z=0;};};};
+	_pos = [(_pos select 0) + 5 * sin (_dir), (_pos select 1) + 5 * cos (_dir), _z];
 	if (surfaceIsWater _pos) then {_player setPosASL _pos;} else {_player setPosATL _pos;};
 };
 
 // Toggles fast forward key bind on and off
 EAT_FastForwardToggle = {
-	private "_isActive";
-	_isActive = _this select 0;
-	if(_isActive) then {
+	local _active = _this select 0;
+	if (_active) then {
 		["FastWalk"] call EAT_Keybind;
 	} else {
 		["EndFastWalk"] call EAT_Keybind;
@@ -126,16 +116,14 @@ EAT_FastForwardToggle = {
 
 // Allows the admin to leap vertically or directionally
 EAT_AdminFastUp = {
-	private "_velocity";
-	_velocity = velocity player;
-	player setVelocity [_velocity select 0,_velocity select 1,5];
+	local _vel = velocity player;
+	player setVelocity [_vel select 0,_vel select 1,5];
 };
 
 // This function toggles the jump key bind on and off
 EAT_FastUpToggle = {
-	private "_isActive";
-	_isActive = _this select 0;
-	if (_isActive) then {
+	local _active = _this select 0;
+	if (_active) then {
 		["FastUp"] call EAT_Keybind;
 	} else {
 		["EndFastUp"] call EAT_Keybind;
@@ -144,11 +132,9 @@ EAT_FastUpToggle = {
 
 // Lowers the terrain
 EAT_GrassOffToggle = {
-	private ["_isActive","_toggle"];
-	_isActive = _this select 0;
-
-	if (_isActive) then {
-		_toggle = "on";
+	local _active = _this select 0;
+	local _toggle = "on";
+	if (_active) then {
 		setTerrainGrid 50;
 	}else{
 		_toggle = "off";
@@ -161,19 +147,14 @@ EAT_GrassOffToggle = {
 
 // Allows admin to be invisible to other players
 EAT_AdminInvisible = {
-	private ["_isActive","_position"];
-	_isActive = _this select 0;
-	_position = getPos player;
-	
-	EAT_clientToServer = ["invisibility",player,[_isActive,_position],dayz_authKey];
+	EAT_clientToServer = ["invisibility",player,[(_this select 0),(getPos player)],dayz_authKey];
 	publicVariableServer "EAT_clientToServer";
 };
 
 // Turns the build count to one and removes the requirement for a plot pole to build
 EAT_adminBuildCount = {
-	private "_isActive";
-	_isActive = _this select 0;
-	if(_isActive) then {
+	local _active = _this select 0;
+	if(_active) then {
 		DZE_StaticConstructionCount = 1;
 		DZE_requireplot = 0;
 	} else {
@@ -183,83 +164,72 @@ EAT_adminBuildCount = {
 };
 
 EAT_AddWeapon = {
-	private ["_handGuns","_gun","_ammo","_HEammo","_player"];
-
 	#define IS_HANDGUN(wpn) (getNumber (configFile >> "CfgWeapons" >> wpn >> "type") == 2)
-
-	_gun = _this select 0;
-	_ammo = _this select 1;
-	if ((count _this) > 2) then {
-		_HEammo = _this select 2;
-	} else {
-		_HEammo = nil;
+	local _gun = _this select 0;
+	local _ammo = _this select 1;
+	local _mags = [];
+	
+	if (count _this > 2) then { // grenade launcher ammo
+		player addMagazine (_this select 2);
+		player addMagazine (_this select 2);
 	};
-	_player = player;
 
 	if (IS_HANDGUN(_gun)) then {
 		{
 			if (IS_HANDGUN(_x)) exitWith {
-				_player removeWeapon _x;
+				player removeWeapon _x;
+				_mags = getArray (configFile >> "cfgWeapons" >> _x >> "magazines");
+				player removeMagazines (_mags select 0);
 			}
-		} count (weapons _player);
+		} count (weapons player);
 	} else {
-		_player removeWeapon (primaryWeapon _player);
+		_mags = getArray (configFile >> "cfgWeapons" >> (primaryWeapon player) >> "magazines");
+		player removeWeapon (primaryWeapon player);
+		player removeMagazines (_mags select 0);
 	};
-
+	
 	// Add magazines before gun so the gun loads ammo on spawn
-	_player addMagazine _ammo;
-	_player addMagazine _ammo;
-	_player addWeapon _gun;
-	_player selectWeapon _gun;
-	if(!(isNil _HEammo)) then {
-		_player addMagazine _HEammo;
-	};
+	player addMagazine _ammo;
+	player addMagazine _ammo;
+	player addWeapon _gun;
+	player selectWeapon _gun;
 };
 
-EAT_Loadouts = {
-	private ["_primaryWeapon","_secondaryWeapon","_primaryAmmo","_secondaryAmmo","_player","_bloodbag","_mags","_weps","_rifleMag","_pistolMag"];
+EAT_Loadouts = {	
+	local _primaryWeapon = _this select 0;
+	local _secondaryWeapon = _this select 1;
+	local _primaryAmmo = getArray (configFile >> "cfgWeapons" >> _primaryWeapon >> "magazines");
+	local _secondaryAmmo = getArray (configFile >> "cfgWeapons" >> _secondaryWeapon >> "magazines");
+	local _rifleMag = _primaryAmmo select 0;
+	local _pistolMag = _secondaryAmmo select 0;
+	local _weps = ["ItemRadio","NVGoggles_DZE","Binocular_Vector","ItemGPS","ItemHatchet","ItemKnife","ItemMatchbox","ItemEtool","ItemToolbox","ItemCrowbar",_primaryWeapon,_secondaryWeapon];
+	local _bloodbag = ["bloodBagONEG","ItemBloodbag"] select dayz_classicBloodBagSystem;
+	local _mags = ["ItemMorphine","ItemEpinephrine","ItemAntibiotic","ItemPainkiller","ItemWaterBottleBoiled","FoodBeefCooked","ItemBandage","ItemBandage",_bloodbag,_rifleMag,_rifleMag,_rifleMag,_pistolMag,_pistolMag,_pistolMag];
 
-	_player = player;
-	_primaryWeapon = _this select 0;
-	_secondaryWeapon = _this select 1;
-	_primaryAmmo = getArray (configFile >> "cfgWeapons" >> _primaryWeapon >> "magazines");
-	_secondaryAmmo = getArray (configFile >> "cfgWeapons" >> _secondaryWeapon >> "magazines");
-	_rifleMag = _primaryAmmo select 0;
-	_pistolMag = _secondaryAmmo select 0;
-	_weps = ["ItemRadio","NVGoggles_DZE","Binocular_Vector","ItemGPS","ItemHatchet","ItemKnife","ItemMatchbox","ItemEtool","ItemToolbox","ItemCrowbar",_primaryWeapon,_secondaryWeapon];
-	if(dayz_classicBloodBagSystem) then {_bloodbag = "ItemBloodbag";} else {_bloodbag = "bloodBagONEG";};
-	_mags = ["ItemMorphine","ItemEpinephrine","ItemAntibiotic","ItemPainkiller","ItemWaterBottleBoiled","FoodBeefCooked","ItemBandage","ItemBandage",_bloodbag,_rifleMag,_rifleMag,_rifleMag,_pistolMag,_pistolMag,_pistolMag];
+	removeAllWeapons player;
+	removeAllItems player;
+	removeBackpack player;
 
-	removeAllWeapons _player;
-	removeAllItems _player;
-	removeBackpack _player;
-
-	_player addBackpack "DZ_Backpack_EP1";
+	player addBackpack "CoyoteBackpack_Camping_DZE2";
 
 	{
-		_player addMagazine _x;
+		player addMagazine _x;
 	} count _mags;
 
 	{
-		_player addWeapon _x;
+		player addWeapon _x;
 	} count _weps;
 
-	_player selectWeapon _primaryWeapon;
+	player selectWeapon _primaryWeapon;
 };
 
 EAT_AddBackPack = {
-	private["_bag","_player"];
-	_bag = _this select 0;
-	_player = player;
-	removeBackpack _player;
-	_player addBackpack _bag;
+	removeBackpack player;
+	player addBackpack (_this select 0);
 };
 
 EAT_AddMeds = {
-	private "_bloodbag";
-
-	if(dayz_classicBloodBagSystem) then {_bloodbag = "ItemBloodbag";}else{_bloodbag = "bloodBagONEG";};
-
+	local _bloodbag = ["bloodBagONEG","ItemBloodbag"] select dayz_classicBloodBagSystem;
 	{
 		player addMagazine _x;
 	} count ["ItemMorphine","ItemEpinephrine","ItemAntibiotic","ItemPainkiller","ItemSodaPepsi","FoodBeefCooked","ItemBandage","ItemBandage",_bloodbag];
@@ -273,8 +243,7 @@ EAT_RemoveGear = {
 };
 
 EAT_AddTools = {
-	private "_tools";
-	_tools = ["ItemRadio","ItemHatchet","ItemKnife","ItemMatchbox","ItemEtool","ItemToolbox","ItemCrowbar"];
+	local _tools = ["ItemRadio","ItemHatchet","ItemKnife","ItemMatchbox","ItemEtool","ItemToolbox","ItemCrowbar"];
 	
 	{
 		if (_x in weapons player) then {
@@ -288,55 +257,47 @@ EAT_AddTools = {
 };
 
 EAT_AddTempVeh = {
+	local _vehicle = _this select 0; 
+	local _dir = getDir vehicle player;
+	local _pos = getPosATL vehicle player;
+	_pos = [(_pos select 0) + 9 * sin (_dir), (_pos select 1) + 9 * cos (_dir), 0];
 
-	_vehtospawn = _this select 0; 
-	_dist = 9;
-	_player = player;
-	_dir = getDir vehicle _player;
-	_pos = getPosATL vehicle _player;
-	_pos = [(_pos select 0)+_dist*sin(_dir),(_pos select 1)+_dist*cos(_dir),0];
-	_vehName = getText(configFile >> "cfgVehicles" >> _vehtospawn >> "displayName");
+	EAT_clientToServer = ["tempVeh",player,[_vehicle,_dir,_pos],dayz_authKey];
+	publicVariableServer "EAT_clientToServer";
 
-	EAT_clientToServer = ["tempVeh",_player,[_vehtospawn,_dir,_pos],dayz_authKey];
-		publicVariableServer "EAT_clientToServer";
-
-	format["Spawned a %1",_vehName] call dayz_rollingMessages;
+	format["Spawned a %1", (getText(configFile >> "cfgVehicles" >> _vehicle >> "displayName"))] call dayz_rollingMessages;
 
 	// Tool use logger
-	if(EAT_logMinorTool) then {format["%1 %2 -- has added a temporary vehicle: %3",name _player,getPlayerUID _player,_vehtospawn] call EAT_Logger;};
+	if(EAT_logMinorTool) then {format["%1 %2 -- has added a temporary vehicle: %3",name player,getPlayerUID player,_vehicle] call EAT_Logger;};
 };
 
 EAT_AddVeh = {
-	private ["_vehName","_veh","_isOk","_vehtospawn","_dir","_pos","_keyColor","_keyNumber","_keySelected","_isKeyOK","_config","_player"];
-	_vehtospawn = _this select 0; // Vehicle string
-	_player = player;
-	_dir = getDir vehicle _player;
-	_pos = getPos vehicle _player;
-	_pos = [(_pos select 0)+9*sin(_dir),(_pos select 1)+9*cos(_dir),0];
-	_vehName = getText(configFile >> "cfgVehicles" >> _vehtospawn >> "displayName");
-	_keyColor = ["Green","Red","Blue","Yellow","Black"] call BIS_fnc_selectRandom;
-	_keyNumber = (floor(random 2500)) + 1;
-	_keySelected = format[("ItemKey%1%2"),_keyColor,_keyNumber]; 
-	_isKeyOK =  isClass(configFile >> "CfgWeapons" >> _keySelected); 
-	_config = _keySelected;
-	_isOk = [_player,_config] call BIS_fnc_invAdd;
+	local _vehicle = _this select 0;
+	local _dir = getDir vehicle player;
+	local _pos = getPos vehicle player;
+	_pos = [(_pos select 0) + 9 * sin (_dir), (_pos select 1) + 9 * cos (_dir), 0];
+	local _keyColor = ["Green","Red","Blue","Yellow","Black"] call BIS_fnc_selectRandom;
+	local _keyNumber = (floor(random 2500)) + 1;
+	local _keySelected = format[("ItemKey%1%2"),_keyColor,_keyNumber]; 
+	local _isKeyOK = isClass(configFile >> "CfgWeapons" >> _keySelected);
+	false call dz_fn_meleeMagazines;
+	local _isOk = [player,_keySelected] call BIS_fnc_invAdd;
+	true call dz_fn_meleeMagazines;
 
 	if (_isOk and _isKeyOK) then {
-
-		PVDZE_veh_Publish2 = [[_dir,_pos],_vehtospawn,false,_keySelected,_player,dayz_authKey];
-		publicVariableServer  "PVDZE_veh_Publish2";
+		PVDZE_veh_Publish2 = [[_dir,_pos],_vehicle,false,_keySelected,player,dayz_authKey];
+		publicVariableServer "PVDZE_veh_Publish2";
 		
-		format["%1 spawned, key added to toolbelt.",_vehName] call dayz_rollingMessages;
+		format["%1 spawned, key added to toolbelt", (getText(configFile >> "cfgVehicles" >> _vehicle >> "displayName"))] call dayz_rollingMessages;
 
-		if(EAT_logMajorTool) then {format["%1 %2 -- has added a permanent vehicle: %3",name _player,getPlayerUID _player,_vehtospawn] call EAT_Logger;};
+		// Tool use logger
+		if(EAT_logMajorTool) then {format["%1 %2 -- has added a permanent vehicle: %3",name player,getPlayerUID player,_vehicle] call EAT_Logger;};
 	} else {
-		"Your toolbelt is full." call dayz_rollingMessages;
+		"Your toolbelt is full" call dayz_rollingMessages;
 	};
 };
 
 EAT_AddVehDialog = {
-	private ["_kindOf", "_filter", "_cfgvehicles","_dialog","_vehicle","_adminList"];
-
 	PermDialogSelected = -1;
 	TempDialogSelected = -1;
 	AdminDialogList = 13000;
@@ -348,9 +309,8 @@ EAT_AddVehDialog = {
 		vhnlist = EAT_allVehList;
 
 		{
-			private ["_index", "_x","_image"];
-			_image = _x select 2;
-			_index = lbAdd [AdminDialogList, format["%2 (%1)", _x select 0, _x select 1]];
+			local _image = _x select 2;
+			local _index = lbAdd [AdminDialogList, format["%2 (%1)", _x select 0, _x select 1]];
 			lbSetPicture [AdminDialogList, _index, _image];
 		} forEach vhnlist;
 	};
@@ -361,26 +321,23 @@ EAT_AddVehDialog = {
 		vhnlist = EAT_allEpochVehList;
 			
 		{
-			private ["_index", "_x","_image"];
-			_image = _x select 2;
-			_index = lbAdd [AdminDialogList, format["%2 (%1)", _x select 0, _x select 1]];
+			local _image = _x select 2;
+			local _index = lbAdd [AdminDialogList, format["%2 (%1)", _x select 0, _x select 1]];
 			lbSetPicture [AdminDialogList, _index, _image];
 		} forEach vhnlist;
 	};
 
-	_dialog = createDialog "EAT_Veh_AdminDialog";
+	createDialog "EAT_Veh_AdminDialog";
 	call LoadAllVehiclesList;
 
 	LoadSpecificList = {
-		private ["_kindOf", "_filter", "_cfgvehicles","_dialog","_vehicle","_veharray"];
 		lbClear AdminDialogList;
 		vhnlist = [];
 		if (EAT_EpochOnlyVehicles) then {
-			//_kindOf = ["LandVehicle","Air","Ship"];
-			_kindOf = _this select 0;
+			local _kindOf = _this select 0;
 			{
 				if (typeName _x == "ARRAY") then {
-					_vehicle = _x select 0;
+					local _vehicle = _x select 0;
 					if (_vehicle isKindOf _kindOf) then 
 					{
 						vhnlist set [count vhnlist, _x]
@@ -388,11 +345,10 @@ EAT_AddVehDialog = {
 				};
 			} forEach EAT_allEpochVehList;
 		} else {
-			//_kindOf = ["LandVehicle","Air","Ship"];
-			_kindOf = _this select 0;
+			local _kindOf = _this select 0;
 			{
 				if (typeName _x == "ARRAY") then {
-					_vehicle = _x select 0;
+					local _vehicle = _x select 0;
 					if (_vehicle isKindOf _kindOf) then 
 					{
 						vhnlist set [count vhnlist, _x]
@@ -401,9 +357,8 @@ EAT_AddVehDialog = {
 			} forEach EAT_allVehList;
 		};
 		{
-			private ["_index", "_x","_image"];
-			_image = _x select 2;
-			_index = lbAdd [AdminDialogList, format["%2 (%1)", _x select 0, _x select 1]];
+			local _image = _x select 2;
+			local _index = lbAdd [AdminDialogList, format["%2 (%1)", _x select 0, _x select 1]];
 		  lbSetPicture [AdminDialogList, _index, _image];
 		} forEach vhnlist;
 	};
@@ -412,12 +367,12 @@ EAT_AddVehDialog = {
 	if ((PermDialogSelected < 0) && (TempDialogSelected < 0)) exitWith {};
 
 	if (PermDialogSelected > -1) then {
-		_vehicle = ((vhnlist select PermDialogSelected) select 0);
+		local _vehicle = ((vhnlist select PermDialogSelected) select 0);
 		[_vehicle] call EAT_AddVeh;
 	};
 
 	if (TempDialogSelected > -1) then {
-		_vehicle = ((vhnlist select TempDialogSelected) select 0);
+		local _vehicle = ((vhnlist select TempDialogSelected) select 0);
 		[_vehicle] call EAT_AddTempVeh;
 	};
 };
@@ -545,71 +500,59 @@ EAT_AISpawn = {
 };
 
 EAT_DeleteObj = {
-	private ["_obj","_objectID","_objectUID","_player"];
-
-	_obj = cursorTarget;
+	local _obj = cursorTarget;
 	if(isNull _obj) exitWith{"No object selected" call dayz_rollingMessages;};
-	_player = player;
 	EAT_DeleteObjText = getText (configFile >> "CfgVehicles" >> typeOf _obj >> "displayName");
 	EAT_databaseRemove = 0;
 
-	_objectID = _obj getVariable["ObjectID","0"];
-	_objectUID = _obj getVariable["ObjectUID","0"];
+	local _objectID = _obj getVariable["ObjectID","0"];
+	local _objectUID = _obj getVariable["ObjectUID","0"];
 
-	_deleteMenu =
+	EAT_deleteMenu =
 	[
-	["",true],
+		["",true],
 		[format["Delete this %1?:",EAT_DeleteObjText], [-1], "", -5, [["expression", ""]], "1", "0"],
 		["Yes",[0],"", -5,[["expression","EAT_databaseRemove = 1;"]],"1","1"],
 		["No", [0], "", -5, [["expression", "EAT_databaseRemove = -1"]], "1", "1"]
 	];
-	showCommandingMenu "#USER:_deleteMenu";
+	showCommandingMenu "#USER:EAT_deleteMenu";
 	waitUntil{(EAT_databaseRemove != 0) || (commandingMenu == "")};
 	if(EAT_databaseRemove <= 0) exitWith{};
-
-
-	// Tool use logger
-	if(EAT_logMinorTool) then {format["%1 %2 -- has deleted object: %3 ID:%4 UID:%5 from database",name _player,getPlayerUID _player,EAT_DeleteObjText,_objectID,_objectUID] call EAT_Logger;};
-
+	
+	if(EAT_logMinorTool) then {format["%1 %2 -- has deleted object: %3 ID:%4 UID:%5 from database",name player,getPlayerUID player,EAT_DeleteObjText,_objectID,_objectUID] call EAT_Logger;};
+	
 	format["Deleted %1",EAT_DeleteObjText] call dayz_rollingMessages;
 
-	PVDZ_obj_Destroy = [_objectID,_objectUID,_player,_obj,dayz_authKey];
+	PVDZ_obj_Destroy = [_objectID,_objectUID,player,_obj,dayz_authKey];
 	publicVariableServer "PVDZ_obj_Destroy";
 };
 
 EAT_DisplayCode = {
-	private ["_combo","_ct","_player"];
-	_ct = cursorTarget;
-	_player = player;
-	_combo = _ct getVariable ["CharacterID","0"];
+	local _ct = cursorTarget;
+	if (isNull _ct) exitWith {"No target" call dayz_rollingMessages;};
+	local _combo = _ct getVariable ["CharacterID","0"];
+	local _id = parseNumber _combo;
 
-	if(isNull _ct) exitWith{"No target" call dayz_rollingMessages;};
-
-	if(_combo != "0") then {
-		if (_ct isKindOf "LandVehicle" OR _ct isKindOf "Helicopter" OR _ct isKindOf "Plane" OR _ct isKindOf "Ship") then {
-			if ((_combo > 0) && (_combo <= 2500)) then {_result = format["Green%1",_combo];}else{
-			if ((_combo > 2500) && (_combo <= 5000)) then {_result = format["Red%1",_combo-2500];}else{
-			if ((_combo > 5000) && (_combo <= 7500)) then {_result = format["Blue%1",_combo-5000];}else{
-			if ((_combo > 7500) && (_combo <= 10000)) then {_result = format["Yellow%1",_combo-7500];}else{
-			if ((_combo > 10000) && (_combo <= 12500)) then {_result = format["Black%1",_combo-10000];};};};};};
-			format["Vehicle Key: %1", _result] call dayz_rollingMessages;
-		}else{
-			format["Item Code: %1", _combo] call dayz_rollingMessages;
+	if (_ct isKindOf "AllVehicles") then {
+		if (_id == 0) exitWith {format ["%1 has ID 0 - No Key", (getText(configFile >> "cfgVehicles" >> (typeOf _ct) >> "displayName"))] call dayz_rollingMessages;};
+		local _result = call {
+			if (_id > 0 && {_id <= 2500}) exitWith {format["Green%1",_id];};
+			if (_id > 2500 && {_id <= 5000}) exitWith {format["Red%1",_id - 2500];};
+			if (_id > 5000 && {_id <= 7500}) exitWith {format["Blue%1",_id - 5000];};
+			if (_id > 7500 && {_id <= 10000}) exitWith {format["Yellow%1",_id - 7500];};
+			if (_id > 10000 && {_id <= 12500}) exitWith {format["Black%1",_id - 10000];};
 		};
-		
-		// Tool use logger
-		if(EAT_logMajorTool) then {format["%1 %2 -- has viewed a locked item: %3",name _player,getPlayerUID _player,_combo] call EAT_Logger;};
+		format["Vehicle Key: %1", _result] call dayz_rollingMessages;
 	} else {
-		format["Not a valid target.",_combo] call dayz_rollingMessages;
+		if (_id == 0) exitWith {format ["%1 has ID 0", (getText(configFile >> "cfgMagazines" >> (typeOf _ct) >> "displayName"))] call dayz_rollingMessages;};
+		format["Item Code: %1", _id] call dayz_rollingMessages;
 	};
+	// Tool use logger
+	if(EAT_logMajorTool) then {format["%1 %2 -- has viewed a locked item: %3",name player,getPlayerUID player,_combo] call EAT_Logger;};
 };
 
 EAT_HealPlayer = {
-	private ["_player","_unit","_UIfix","_UIfix2"];
-
 	EAT_healDistance = -1;
-	_player = player;
-
 	EAT_distanceMenu = 
 	[
 		["",true],
@@ -627,7 +570,6 @@ EAT_HealPlayer = {
 	];
 
 	showCommandingMenu "#USER:EAT_distanceMenu";
-
 	WaitUntil{commandingMenu == ""};
 
 	if(EAT_healDistance == -1) exitWith {};
@@ -655,73 +597,67 @@ EAT_HealPlayer = {
 
 	disableUserInput false;
 	dayz_sourceBleeding = objNull;
-	_player setVariable ["USEC_injured",false,true];
-	_player setVariable['USEC_inPain',false,true];
-	_player setVariable['USEC_infected',false,true];
-	_player setVariable['USEC_lowBlood',false,true];
-	_player setVariable['USEC_BloodQty',12000,true];
-	_player setVariable['USEC_isCardiac',false,true];
-	{_player setVariable[_x,false,true];} forEach USEC_woundHit;
-	_player setVariable ["unconsciousTime", r_player_timeout, true];
-	_player setVariable['NORRN_unconscious',false,true];
-	_player setVariable ['messing',[dayz_hunger,dayz_thirst],true];
-	_player setHit ['legs',0];
-	_player setVariable ['hit_legs',0,true];
-	_player setVariable ['hit_hands',0,true];
-	_player setVariable['medForceUpdate',true,true];
-	_player setVariable["inCombat",false, true];
+	player setVariable ["USEC_injured",false,true];
+	player setVariable['USEC_inPain',false,true];
+	player setVariable['USEC_infected',false,true];
+	player setVariable['USEC_lowBlood',false,true];
+	player setVariable['USEC_BloodQty',12000,true];
+	player setVariable['USEC_isCardiac',false,true];
+	{player setVariable[_x,false,true];} forEach USEC_woundHit;
+	player setVariable ["unconsciousTime", r_player_timeout, true];
+	player setVariable['NORRN_unconscious',false,true];
+	player setVariable ['messing',[dayz_hunger,dayz_thirst],true];
+	player setHit ['legs',0];
+	player setVariable ['hit_legs',0,true];
+	player setVariable ['hit_hands',0,true];
+	player setVariable["inCombat",false, true];
 
 	disableSerialization;
-	_UIfix = (uiNameSpace getVariable 'DAYZ_GUI_display') displayCtrl 1303;
-	_UIfix2 = (uiNameSpace getVariable 'DAYZ_GUI_display') displayCtrl 1203;
+	local _UIfix = (uiNameSpace getVariable 'DAYZ_GUI_display') displayCtrl 1303;
+	local _UIfix2 = (uiNameSpace getVariable 'DAYZ_GUI_display') displayCtrl 1203;
 	_UIfix ctrlShow false;
 	_UIfix2 ctrlShow false;
 
 	if(EAT_healDistance == 0) exitWith {};
-
-	xyzaa = _player nearEntities ["Man", EAT_healDistance];
+	
+	local _entities = player nearEntities ["CAManBase", EAT_healDistance];
+	local _list = [];
 
 	{
-		if (!(_x isKindOf "zZombie_Base") && !(_x isKindOf "Animal")) then {
-			_unit = _x;
-
-			PVDZ_send = [_unit,"Bandage",[_unit,player]];
+		if (isPlayer _x) then {
+			PVDZ_send = [_x,"Bandage", [_x,player]];
 			publicVariableServer "PVDZ_send";
 			
-			PVDZ_send = [_unit, "Transfuse", [_unit, player, 12000]];
+			PVDZ_send = [_x, "Transfuse", [_x, player, 12000]];
 			publicVariableServer "PVDZ_send";
 			
-			PVDZ_send = [_unit,"Morphine",[_unit,player]];
+			PVDZ_send = [_x,"Morphine", [_x,player]];
 			publicVariableServer "PVDZ_send";
 			
-			PVDZ_send = [_unit,"Epinephrine",[_unit,player,"ItemEpinephrine"]];
+			PVDZ_send = [_x,"Epinephrine", [_x,player,"ItemEpinephrine"]];
 			publicVariableServer "PVDZ_send";
 			
-			PVDZ_send = [_unit,"Painkiller",[_unit,player]];
+			PVDZ_send = [_x,"Painkiller", [_x,player]];
 			publicVariableServer "PVDZ_send";
 			
-			PVDZ_send = [_unit,"Antibiotics",[_unit,player]];
+			PVDZ_send = [_x,"Antibiotics", [_x,player]];
 			publicVariableServer "PVDZ_send";
+			
+			_list set[count _list, (name _x)];
 		};
-	} forEach xyzaa;
+	} count _entities;
 
-	format["%1 healed",xyzaa] call dayz_rollingMessages;
+	if (count _list > 0) then {format ["%1 healed",_list] call dayz_rollingMessages;};
 };
 
 EAT_Humanity = {
-	/*
-		Add or remove the selected humanity amount from player.
-	*/
+	local _addOrRemove = _this select 0;
+	local _target = cursorTarget;
 
-	private ["_target","_player","_humanity","_addOrRemove"];
-	_addOrRemove = _this select 0;
-	_target = cursorTarget;
-	_player = player;
-
-	if(!isPlayer _target) then {_target = _player;};
+	if (!isPlayer _target) then {_target = player;};
 
 	EAT_humanityGain = -1;
-	_humanity = _target getVariable["humanity", 0];
+	local _humanity = _target getVariable["humanity", 0];
 
 	if(_addOrRemove != "reset") then {
 		EAT_humanityChange = [
@@ -747,28 +683,22 @@ EAT_Humanity = {
 		format["%1 humanity has been added (total: %2) for player %3", EAT_humanityGain, _humanity + EAT_humanityGain, name _target] call dayz_rollingMessages;
 
 		// Tool use logger
-		if(EAT_logMinorTool) then {format["%1 %2 -- has added %3 to %4 humanity (total %5)",name _player,getPlayerUID _player,EAT_humanityGain,name _target,_humanity + EAT_humanityGain] call EAT_Logger;};
+		if(EAT_logMinorTool) then {format["%1 %2 -- has added %3 to %4 humanity (total %5)",name player,getPlayerUID player,EAT_humanityGain,name _target,_humanity + EAT_humanityGain] call EAT_Logger;};
 	}else{
 		EAT_humanityGain = _humanity - (_humanity * 2);
 		_target setVariable["humanity", 2500, true];
 		format["Humanity reset to 2500 for player %1", name _target] call dayz_rollingMessages;
 
 		// Tool use logger
-		if(EAT_logMinorTool) then {format["%1 %2 -- has adjusted %3 humanity to 2500",name _player,getPlayerUID _player,name _target] call EAT_Logger;};
+		if(EAT_logMinorTool) then {format["%1 %2 -- has adjusted %3 humanity to 2500",name player,getPlayerUID player,name _target] call EAT_Logger;};
 	};
 };
 
 EAT_SendMessage = {
-	private "_dialog";
+	uiSleep 0.2; // Sleep to make sure scroll menu is cleared
 	EAT_SendDialogText = "";
-
-	// Sleep to make sure scroll menu is cleared
-	uiSleep 0.2;
-
-	_dialog = createDialog "EAT_messageBox_Dialog";
-
+	createDialog "EAT_messageBox_Dialog";
 	ctrlSetText [1001,"Send a server message"];
-
 	waitUntil {!dialog};
 	if(EAT_SendDialogText == "") exitWith {};
 
@@ -836,38 +766,17 @@ EAT_AddMoney = {
 };
 
 EAT_Lock = {
-	private ["_objectID","_objectUID","_obj","_ownerID","_dir","_pos","_holder","_weapons","_magazines","_backpacks","_lockedClass","_player"];
+	local _obj = cursorTarget;
+	if (isNull _obj) exitWith {"No Target" call dayz_rollingMessages;};
 
-	_obj = cursorTarget;
-	if(isNull _obj) exitWith {};
-
-	_objType = typeOf _obj;
-	_ownerID = _obj getVariable["ObjectID","0"];
-	_objectID = _obj getVariable["ObjectID","0"];
-	_player = player;
-
-	// Lock car
-	if (_obj isKindOf "LandVehicle" || _obj isKindOf "Air" || _obj isKindOf "Ship") then {
-		{player removeAction _x} forEach s_player_lockunlock;s_player_lockunlock = [];
-		s_player_lockUnlock_crtl = 1;
-
-		PVDZE_veh_Lock = [_obj,true];
-
-		if (local _obj) then {
-			PVDZE_veh_Lock spawn local_lockUnlock
-		} else {
-			publicVariable "PVDZE_veh_Lock";
-		};
-		
-		s_player_lockUnlock_crtl = -1;
-
-		// Tool use logger
-		if(EAT_logMinorTool) then {format["%1 %2 -- has locked a vehicle: %3",name _player,getPlayerUID _player,_obj] call EAT_Logger;};
-	} else {
-		//Lock Safe/Lock_box
-		if(_objType in DZE_UnLockedStorage) then {
-			_lockedClass = getText (configFile >> "CfgVehicles" >> _objType >> "lockedClass");
-			_text = getText (configFile >> "CfgVehicles" >> _objType >> "displayName");
+	local _objType = typeOf _obj;
+	local _objectID = _obj getVariable["ObjectID","0"];
+	
+	call {
+		if(_objType in DZE_UnLockedStorage) exitWith { // Lock safe/lockbox
+			local _lockedClass = getText (configFile >> "CfgVehicles" >> _objType >> "lockedClass");
+			local _text = getText (configFile >> "CfgVehicles" >> _objType >> "displayName");
+			local _ownerID = _obj getVariable["ownerPUID","0"];
 			
 			disableUserInput true; // Make sure player can not modify gear while it is being saved
 			(findDisplay 106) closeDisplay 0; // Close gear
@@ -875,7 +784,7 @@ EAT_Lock = {
 		
 			[_lockedClass,objNull] call fn_waitForObject;
 		
-			PVDZE_handleSafeGear = [_player,_obj,1];
+			PVDZE_handleSafeGear = [player,_obj,1];
 			publicVariableServer "PVDZE_handleSafeGear";	
 			//wait for response from server to verify safe was logged and saved before proceeding
 			waitUntil {!isNil "dze_waiting"};
@@ -884,196 +793,175 @@ EAT_Lock = {
 			format[localize "str_epoch_player_117",_text] call dayz_rollingMessages;
 			
 			// Tool use logger
-			if(EAT_logMajorTool) then {format["%1 %2 -- has locked a safe - ID:%3 UID:%4",name _player,getPlayerUID _player,_objectID,_ownerID] call EAT_Logger;};
-
-		} else {
-			//Lock Door
-			
-			_objectCharacterID = _obj getVariable ["CharacterID","0"];
-			
-			if(_obj animationPhase "Open_hinge" == 1) then {_obj animate ["Open_hinge", 0];};
-			if(_obj animationPhase "Open_latch" == 1) then {_obj animate ["Open_latch", 0];};
-			if(_obj animationPhase "Open_door" == 1) then {_obj animate ["Open_door", 0];};
-			if(_obj animationPhase "DoorR" == 1) then {_obj animate ["DoorR", 0];};
-			if(_obj animationPhase "LeftShutter" == 1) then {_obj animate ["LeftShutter", 0];};
-			if(_obj animationPhase "RightShutter" == 1) then {_obj animate ["RightShutter", 0];};
-			
-			// Tool use logger
-			if(EAT_logMajorTool) then {format["%1 %2 -- has locked a door - ID:%3 Combo:%4",name _player,getPlayerUID _player,_objectID,_objectCharacterID] call EAT_Logger;};
+			if(EAT_logMajorTool) then {format["%1 %2 -- has locked a safe - ID:%3 UID:%4",name player,getPlayerUID player,_objectID,_ownerID] call EAT_Logger;};
 		};
+		if (_obj isKindOf "AllVehicles") exitWith { // Lock vehicle
+			{player removeAction _x} forEach s_player_lockunlock;s_player_lockunlock = [];
+			s_player_lockUnlock_crtl = 1;
+
+			PVDZE_veh_Lock = [_obj,true];
+			if (local _obj) then {
+				PVDZE_veh_Lock spawn local_lockUnlock
+			} else {
+				publicVariable "PVDZE_veh_Lock";
+			};
+			s_player_lockUnlock_crtl = -1;
+
+			// Tool use logger
+			if(EAT_logMinorTool) then {format["%1 %2 -- has locked a vehicle: %3",name player,getPlayerUID player,_obj] call EAT_Logger;};
+		};
+		// Lock Door
+		if (_obj animationPhase "Open_hinge" == 1) then {_obj animate ["Open_hinge", 0];};
+		if (_obj animationPhase "Open_latch" == 1) then {_obj animate ["Open_latch", 0];};
+		if (_obj animationPhase "Open_door" == 1) then {_obj animate ["Open_door", 0];};
+		if (_obj animationPhase "DoorR" == 1) then {_obj animate ["DoorR", 0];};
+		if (_obj animationPhase "LeftShutter" == 1) then {_obj animate ["LeftShutter", 0];};
+		if (_obj animationPhase "RightShutter" == 1) then {_obj animate ["RightShutter", 0];};
+		
+		// Tool use logger
+		if(EAT_logMajorTool) then {format["%1 %2 -- has locked a door - ID:%3 Combo:%4",name _player,getPlayerUID _player,_objectID,(_obj getVariable ["CharacterID","0"])] call EAT_Logger;};
 	};
 };
 
 EAT_Repair = {
-	private ["_configVeh","_capacity","_vehicle","_type","_name","_hitpoints","_player","_strH"];
-
-	_vehicle = cursorTarget;
-	_type = typeOf _vehicle;
-	_configVeh = configFile >> "cfgVehicles" >> _type;
-	_capacity = getNumber(_configVeh >> "fuelCapacity");
-	_name = getText(configFile >> "cfgVehicles" >> _type >> "displayName");
-	_player = player;
-
+	local _vehicle = cursorTarget;
 	if (isNull _vehicle) exitWith {"No target" call dayz_rollingMessages;};
 
-	_hitpoints = _vehicle call vehicle_getHitpoints;
 	{
-		private ["_damage","_selection"];
-		_damage = [_vehicle,_x] call object_getHit;
-
-		if (_damage > 0) then {
-			_vehicle setVariable[_strH,0,true];
+		local _damage = [_vehicle,_x] call object_getHit;
+		if ((_damage select 0) > 0) then {
+			[_vehicle, (_damage select 1), 0, true] call fnc_veh_handleRepair;
 		};
-	} forEach _hitpoints;
-
+	} forEach (_vehicle call vehicle_getHitpoints);
+		
 	if (local _vehicle) then {
-		[_vehicle,_capacity] call local_setFuel;
+		[_vehicle,1] call local_setFuel;
 	} else {
-		PVDZ_send = [_vehicle,"SetFuel",[_vehicle,_capacity]];
+		PVDZ_send = [_vehicle,"SetFuel",[_vehicle,1]];
 		publicVariableServer "PVDZ_send";
 	};
 
-	PVDZ_veh_Save = [_vehicle,"repair"];
-	publicVariableServer "PVDZ_veh_Save";
-
-	format["%1 Repaired and Refueled", _name] call dayz_rollingMessages;
+	format["%1 Repaired and Refueled", (getText(configFile >> "cfgVehicles" >> (typeOf _vehicle) >> "displayName"))] call dayz_rollingMessages;
 
 	// Tool use logger
-	if(EAT_logMinorTool) then {format["%1 %2 -- has repaired %3",name _player,getPlayerUID _player,_vehicle] call EAT_Logger;};
+	if(EAT_logMinorTool) then {format["%1 %2 -- has repaired %3",name player,getPlayerUID player,_vehicle] call EAT_Logger;};
 };
 
 EAT_Unlock = {
-	private ["_objectID","_objectUID","_obj","_ownerID","_dir","_pos","_holder","_weapons","_magazines","_backpacks","_objWpnTypes","_objWpnQty","_countr","_unlockedClass","_objType","_objectCharacterID","_player"];
+	local _obj = cursorTarget;
+	if (isNull _obj) exitWith {"No Target" call dayz_rollingMessages;};
+	local _objectID = _obj getVariable["ObjectID","0"];
+	local _objType = typeOf _obj;
 
-	_obj = cursorTarget;
-	if(isNull _obj) exitWith {};
-	_objectID = _obj getVariable["ObjectID","0"];
-	_ownerID = _obj getVariable["ObjectID","0"];
-	_objType = typeOf _obj;
-	_player = player;
-
-	// Unlock car
-	if (_obj isKindOf "LandVehicle" || _obj isKindOf "Air" || _obj isKindOf "Ship") then {
-
-		{player removeAction _x} forEach s_player_lockunlock;s_player_lockunlock = [];
-		s_player_lockUnlock_crtl = 1;
-
-		PVDZE_veh_Lock = [_obj,false];
-					
-		if (local _obj) then {
-			PVDZE_veh_Lock spawn local_lockUnlock
-		} else {
-			publicVariable "PVDZE_veh_Lock";
-		};
-
-		s_player_lockUnlock_crtl = -1;
-
-		// Tool use logger
-		if(EAT_logMajorTool) then {format["%1 %2 -- has unlocked vehicle: %3 with ID:%4",name _player,getPlayerUID _player,_obj,_objectID] call EAT_Logger;};
-	} else {
-		// Unlock Safe/Lock_Box
-		if(_objType in DZE_LockedStorage) then {
+	call {
+		if (_objType in DZE_LockedStorage) exitWith { // Unlock Safe/Lock_Box
 			// Get all required variables
-			_unlockedClass = getText (configFile >> "CfgVehicles" >> _objType >> "unlockedClass");
-			_text =	getText (configFile >> "CfgVehicles" >> _objType >> "displayName");
-			//_obj setVariable["packing",1];
-			
+			local _unlockedClass = getText (configFile >> "CfgVehicles" >> _objType >> "unlockedClass");
+			local _ownerID = _obj getVariable["ownerPUID","0"];
 			disableUserInput true; // Make sure player can not modify gear while it is filling
 			(findDisplay 106) closeDisplay 0; // Close gear
 			dze_waiting = nil;
-			
 			[_unlockedClass,objNull] call fn_waitForObject;
 			
-			PVDZE_handleSafeGear = [_player,_obj,0];
+			PVDZE_handleSafeGear = [player,_obj,0];
 			publicVariableServer "PVDZE_handleSafeGear";
 			//wait for response from server to verify safe was logged before proceeding
 			waitUntil {!isNil "dze_waiting"};
 			disableUserInput false; // Safe is done filling now
 			
-			format[localize "STR_BLD_UNLOCKED",_text] call dayz_rollingMessages;
-			
-			// Tool use logger
-			if(EAT_logMajorTool) then {format["%1 %2 -- has unlocked a safe - ID:%3 UID:%4",name _player,getPlayerUID _player,_objectID,_ownerID] call EAT_Logger;};	
-		} else {
-
-			_objectCharacterID = _obj getVariable ["CharacterID","0"];
-			
-			//Unlock Doors
-			if(_obj animationPhase "Open_hinge" == 0) then {_obj animate ["Open_hinge", 1];};
-			if(_obj animationPhase "Open_latch" == 0) then {_obj animate ["Open_latch", 1];};
-			if(_obj animationPhase "Open_door" == 0) then {_obj animate ["Open_door", 1];};
-			if(_obj animationPhase "DoorR" == 0) then {_obj animate ["DoorR", 1];};
-			if(_obj animationPhase "LeftShutter" == 0) then {_obj animate ["LeftShutter", 1];};
-			if(_obj animationPhase "RightShutter" == 0) then {_obj animate ["RightShutter", 1];};
-			
-			// Tool use logger
-			if(EAT_logMajorTool) then {format["%1 %2 -- has unlocked a door - ID:%3 Combo:%4",name _player,getPlayerUID _player,_objectID,_objectCharacterID] call EAT_Logger;};
+			format[localize "STR_BLD_UNLOCKED", (getText (configFile >> "CfgVehicles" >> _objType >> "displayName"))] call dayz_rollingMessages;
+			if(EAT_logMajorTool) then {format["%1 %2 -- has unlocked a safe - ID:%3 UID:%4",name player,getPlayerUID player,_objectID,_ownerID] call EAT_Logger;};
 		};
+		if (_obj isKindOf "AllVehicles") exitWith { // Unlock vehicle
+			{player removeAction _x} forEach s_player_lockunlock;s_player_lockunlock = [];
+			s_player_lockUnlock_crtl = 1;
+
+			PVDZE_veh_Lock = [_obj,false];
+						
+			if (local _obj) then {
+				PVDZE_veh_Lock spawn local_lockUnlock
+			} else {
+				publicVariable "PVDZE_veh_Lock";
+			};
+
+			s_player_lockUnlock_crtl = -1;
+
+			if(EAT_logMajorTool) then {format["%1 %2 -- has unlocked vehicle: %3 with ID:%4",name player,getPlayerUID player,_obj,_objectID] call EAT_Logger;};
+		};
+		//Unlock Door
+		if(_obj animationPhase "Open_hinge" == 0) then {_obj animate ["Open_hinge", 1];};
+		if(_obj animationPhase "Open_latch" == 0) then {_obj animate ["Open_latch", 1];};
+		if(_obj animationPhase "Open_door" == 0) then {_obj animate ["Open_door", 1];};
+		if(_obj animationPhase "DoorR" == 0) then {_obj animate ["DoorR", 1];};
+		if(_obj animationPhase "LeftShutter" == 0) then {_obj animate ["LeftShutter", 1];};
+		if(_obj animationPhase "RightShutter" == 0) then {_obj animate ["RightShutter", 1];};
+		
+		if(EAT_logMajorTool) then {format["%1 %2 -- has unlocked a door - ID:%3 Combo:%4",name player,getPlayerUID player,_objectID,(_obj getVariable ["CharacterID","0"])] call EAT_Logger;};
 	};
 };
 
 EAT_RecoverKey = {
-	private ["_ct","_id","_result","_player"];
-	_ct = cursorTarget;
-	_player = player;
+	local _obj = cursorTarget;
+	if (isNull _obj) exitWith {"No target" call dayz_rollingMessages;};
 
-	if (isNull _ct) exitWith {"No target" call dayz_rollingMessages;};
-
-	if (_ct isKindOf "LandVehicle" OR _ct isKindOf "Air" OR _ct isKindOf "Ship") then
-	{
-		_id = _ct getVariable ["CharacterID","0"];
-		_id = parseNumber _id;
-		_result = "ItemKey";
-		if (_id == 0) exitWith {cutText [format["%1 has ID 0 - No Key possible.",typeOf _ct], "PLAIN"];};
-		if ((_id > 0) && (_id <= 2500)) then {_result = format["ItemKeyGreen%1",_id];}else{
-		if ((_id > 2500) && (_id <= 5000)) then {_result = format["ItemKeyRed%1",_id-2500];}else{
-		if ((_id > 5000) && (_id <= 7500)) then {_result = format["ItemKeyBlue%1",_id-5000];}else{
-		if ((_id > 7500) && (_id <= 10000)) then {_result = format["ItemKeyYellow%1",_id-7500];}else{
-		if ((_id > 10000) && (_id <= 12500)) then {_result = format["ItemKeyBlack%1",_id-10000];};};};};};
-
-		_player addWeapon _result;
-		format["Key [%1] added to inventory!",_result] call dayz_rollingMessages;
+	if (_obj isKindOf "AllVehicles") then {
+		local _id = parseNumber (_obj getVariable ["CharacterID","0"]);
+		if (_id == 0) exitWith {format ["%1 has ID 0 - No Key possible", (getText(configFile >> "cfgVehicles" >> (typeOf _obj) >> "displayName"))] call dayz_rollingMessages;};
 		
-		if(EAT_logMajorTool) then {format["%1 %2 -- has generated %3 for a %4",name _player,getPlayerUID _player,_result,_ct] call EAT_Logger;};
+		local _result = call {
+			if (_id > 0 && {_id <= 2500}) exitWith {format["ItemKeyGreen%1", _id];};
+			if (_id > 2500 && {_id <= 5000}) exitWith {format["ItemKeyRed%1", _id - 2500];};
+			if (_id > 5000 && {_id <= 7500}) exitWith {format["ItemKeyBlue%1", _id - 5000];};
+			if (_id > 7500 && {_id <= 10000}) exitWith {format["ItemKeyYellow%1", _id - 7500];};
+			if (_id > 10000 && {_id <= 12500}) exitWith {format["ItemKeyBlack%1", _id - 10000];};
+		};
+
+		local _isKeyOK = isClass(configFile >> "CfgWeapons" >> _result);
+		false call dz_fn_meleeMagazines;
+		local _isOk = [player,_result] call BIS_fnc_invAdd;
+		true call dz_fn_meleeMagazines;
+		if (_isOk && _isKeyOK) then {
+			format["Key [%1] added to inventory!",_result] call dayz_rollingMessages;
+		} else {
+			"Your toolbelt is full" call dayz_rollingMessages;
+		};
+		
+		if(EAT_logMajorTool) then {format["%1 %2 -- has generated %3 for a %4",name player,getPlayerUID player,_result,_obj] call EAT_Logger;};
 	};
 };
 
 EAT_SkinChanger = {
-	private ["_skin","_unitBag","_bagType","_bagMagazines","_bagWeapons","_array1","_array2","_player"];
+	private ["_skin","_unitBag","_bagType","_bagMagazines","_bagWeapons","_array1","_array2"];
 	_skin = _this select 0;
-	_player = player;
-	_unitBag = unitBackpack _player;
+	_unitBag = unitBackpack player;
 	_bagType = (typeOf _unitBag);
 
 	// Tool use logger
-	if(EAT_logMinorTool) then {format["%1 %2 -- has changed skins to %3",name _player,getPlayerUID _player,_skin] call EAT_Logger;};
+	if(EAT_logMinorTool) then {format["%1 %2 -- has changed skins to %3",name player,getPlayerUID player,_skin] call EAT_Logger;};
 
-	if(_bagType !="") then {
+	if(_bagType != "") then {
 		_bagWeapons = getWeaponCargo _unitBag;
 		_bagMagazines = getMagazineCargo _unitBag;
-		removeBackpack (vehicle _player);
+		removeBackpack (vehicle player);
 		[dayz_playerUID,dayz_characterID,_skin] spawn player_humanityMorph;
 		uiSleep 0.3;
 		
-		if(_bagType in DayZ_Backpacks) then
+		(vehicle player) addBackpack _bagType;
+		uiSleep 0.1;
+	
+		_array1 = _bagWeapons select 0;
+		_array2 = _bagWeapons select 1;
+	
 		{
-			(vehicle _player) addBackpack _bagType;
-			uiSleep 0.1;
-		
-			_array1 = _bagWeapons select 0;
-			_array2 = _bagWeapons select 1;
-		
-			{
-				(unitBackpack _player) addWeaponCargo [(_array1 select _forEachIndex),(_array2 select _forEachIndex)];
-			}forEach _array1;
-				
-			_array1 = _bagMagazines select 0;
-			_array2 = _bagMagazines select 1;
-		
-			{
-				(unitBackpack _player) addMagazineCargo [(_array1 select _forEachIndex),(_array2 select _forEachIndex)];
-			}forEach _array1;
-		};
+			(unitBackpack player) addWeaponCargo [(_array1 select _forEachIndex),(_array2 select _forEachIndex)];
+		} forEach _array1;
+			
+		_array1 = _bagMagazines select 0;
+		_array2 = _bagMagazines select 1;
+	
+		{
+			(unitBackpack player) addMagazineCargo [(_array1 select _forEachIndex),(_array2 select _forEachIndex)];
+		} forEach _array1;
 	} else {
 		[dayz_playerUID,dayz_characterID,_skin] spawn player_humanityMorph;
 	};
@@ -1357,7 +1245,8 @@ fn_BCSelect = {
 		_base = BCBaseList select _bindex;
 		//_player = BCNearbyList select _pindex;
 		_attach_position = player modelToWorld (_base select 2);
-		_attach_position set [2, getPosASL player select 2];
+		//_attach_position set [2, getPosASL player select 2];
+		_attach_position set [2, ([player] call FNC_GetPos) select 2];
 		_base_objects = [_base select 3, _attach_position, player] call fn_BCCreateBase;
 		[_base_objects] call fn_BCBuildbase;
 	};
@@ -1375,11 +1264,16 @@ fn_BCInsert = {
 };
 
 fn_BCSetCenter = {
-	private ["_centerSign"];
 	BC_radius = nil;
-	BC_Center = getPosASL player;
-	_centerSign = createVehicle ["Sign_arrow_down_large_EP1", [0,0,0], [], 0, "CAN_COLLIDE"];
-	_centerSign setPosASL BC_Center;
+	//BC_Center = getPosASL player;
+	BC_Center = [player] call FNC_GetPos;
+	local _centerSign = createVehicle ["Sign_arrow_down_large_EP1", [0,0,0], [], 0, "CAN_COLLIDE"];
+	if (surfaceIsWater BC_Center) then {
+		_centerSign setPosASL BC_Center;
+	} else {
+		_centerSign setPosATL BC_Center;
+	};
+	//_centerSign setPosASL BC_Center;
 	_centerSign spawn {sleep 30; deleteVehicle _this;};
 	showCommandingMenu "#USER:BCMainMenu";
 };
@@ -1414,7 +1308,8 @@ fn_BCExport = {
 		private ["_obj_type", "_direction", "_obj_position", "_relative_position", "_row"];
 		_obj_type = typeOf _x;
 		_direction = getDir _x;
-		_obj_position = getPosASL _x;
+		//_obj_position = getPosASL _x;
+		_obj_position = [_x] call FNC_GetPos;
 		_relative_position = [
 			(_obj_position select 0) - (_position select 0),
 			(_obj_position select 1) - (_position select 1),
@@ -1454,19 +1349,18 @@ fn_BCCopy = {
 	_distance = BC_radius;
 	_nearest_objects = nearestObjects [[_position select 0, _position select 1], DayZ_SafeObjects, _distance];
 	{
-		private ["_obj_type", "_direction", "_obj_position", "_relative_position", "_row","_vector"];
+		private ["_obj_type","_direction","_obj_position","_relative_position","_row","_vector"];
 		_obj_type = typeOf _x;
 		_direction = getDir _x;
-		_obj_position = getPosASL _x;
-		_vector = [(vectorDir _x),(vectorUp _x)];
-		_x setVariable["memDir",_direction,true];
-		_x setVectorDirAndUp _vector;
+		//_obj_position = getPosASL _x;
+		_obj_position = [_x] call FNC_GetPos;
+		_vector = [vectorDir _x,vectorUp _x];
 		_relative_position = [
 			(_obj_position select 0) - (_position select 0),
 			(_obj_position select 1) - (_position select 1),
 			(_obj_position select 2) - (_position select 2)
 		];
-		_row = [_obj_type, _relative_position, _direction];
+		_row = [_obj_type, _relative_position, _direction, _vector];
 		_row set [count _row, _x];
 		_objects set [count _objects, _row];
 		true
@@ -1486,7 +1380,8 @@ fn_BCPaste = {
 	_dimensions = BCCopiedBase call fn_BCGetDimensions;
 	_attach_position = player modelToWorld [0, ((_dimensions select 0) max (_dimensions select 1)), 0];
 	diag_log str [0, ((_dimensions select 0) max (_dimensions select 1)), 0];
-	_attach_position set [2, getPosASL player select 2];
+	//_attach_position set [2, getPosASL player select 2];
+	_attach_position set [2, ([player] call FNC_GetPos) select 2];
 	_base_objects = [BCCopiedBase, _attach_position] call fn_BCCreateBase;
 	[_base_objects] call fn_BCBuildbase;
 
@@ -1552,7 +1447,7 @@ fn_BCSaveToDb = {
 	{
 		_x setVariable ["CharacterID",dayz_characterID,true];
 		
-		PVDZ_obj_Publish = [dayz_characterID,_x,[getDir _x,getPosATL _x,BC_BuildVector],[],player,dayz_authKey];
+		PVDZ_obj_Publish = [dayz_characterID,_x,[getDir _x,getPosATL _x,[vectorDir _x,vectorUp _x]],[],player,dayz_authKey];
 		publicVariableServer "PVDZ_obj_Publish";
 			
 	} forEach BCCurrentBase;
@@ -1577,7 +1472,8 @@ fn_BCCenter = {
 	_az = 0;
 	{
 		private ["_pos"];
-		_pos = getPosASL _x;
+		//_pos = getPosASL _x;
+		_pos = [_x] call FNC_GetPos;
 		_ax = _ax + (_pos select 0);
 		_ay = _ay + (_pos select 1);
 		_az = _az + (_pos select 2);
@@ -1587,30 +1483,79 @@ fn_BCCenter = {
 	_center
 };
 
+fn_BCRotateVector = {
+	local _object = _this select 0;
+	local _vector = _this select 1;
+	local _aroundZ = (360 - (_this select 2)) - 360;
+	local _dirX = ((_vector select 0) select 0);
+	local _dirY = ((_vector select 0) select 1);
+	local _dirZ = ((_vector select 0) select 2);
+	local _upX = ((_vector select 1) select 0);
+	local _upY = ((_vector select 1) select 1);
+	local _upZ = ((_vector select 1) select 2);
+	
+	
+	local _sinaroundZ = sin _aroundZ;
+	local _cosaroundZ = cos _aroundZ;
+	local _dirXTemp = _dirX;
+	_dirX = (_dirXTemp * _cosaroundZ) - (_dirY * _sinaroundZ);
+	_dirY = (_dirY * _cosaroundZ) + (_dirXTemp * _sinaroundZ);
+	local _upXTemp = _upX;
+	_upX = (_upXTemp * _cosaroundZ) - (_upY * _sinaroundZ);
+	_upY = (_upY * _cosaroundZ) + (_upXTemp * _sinaroundZ);
+	
+	local _dir = [_dirX, _dirY, _dirZ];
+	local _up = [_upX, _upY, _upZ];
+	_object setVectorDirAndUp [_dir, _up];
+};
+
 fn_BCCreateBase = {
-	private ["_objects", "_items", "_position", "_player"];
+	
+	//#include "\z\addons\dayz_code\util\Vector.hpp"
+	
+	private ["_objects", "_items", "_position", "_player","_dirPlayer","_playerVectorDir"];
 	_objects = [];
 	_items = _this select 0;
 	_position = _this select 1;
+	_dirPlayer = getDir player;
 	if (count _this == 3) then {
 		_player = _this select 2;
 	};
 	{
-		private ["_object", "_orig_obj"];
+		private ["_object", "_orig_obj","_objectVectorDir","_resultVectorDir","_rotateDegrees","_newDir","_rotate","_vector","_newVector"];
 		_object = createVehicle [_x select 0, [0,0,0], [], 0, "CAN_COLLIDE"];
-		_object setPosASL [
-			((_x select 1) select 0) + (_position select 0),
-			((_x select 1) select 1) + (_position select 1),
-			((_x select 1) select 2) + (_position select 2) 
-		];
+		//_object = (_x select 0) createVehicle [0,0,0];
+		_newDir = ((_x select 2) - _dirPlayer);
+		_object setDir _newDir;
+		//_rotate = ((360 - _newDir) - 360);
+		//_vector = _x select 3;
+		//_object setVectorDirAndUp (Vector_Rotate3D_Fast((_vector select 0), (_vector select 1), _rotate)); // use this instead of creating a new function.
+		//_newVector = [(_vector select 0), (_vector select 1), _rotate] call dz_fn_vector_rotate3d;
+		//diag_log _newVector;
+		//diag_log formatText ["Vector after rotation %1",(Vector_Rotate3D((_vector select 0), (_vector select 1), _rotate));];
+		//_object setVectorDirAndUp (Vector_Rotate3D((_vector select 0), (_vector select 1), _rotate));
+		if (surfaceIsWater _position) then {
+			_object setPosASL [
+				((_x select 1) select 0) + (_position select 0),
+				((_x select 1) select 1) + (_position select 1),
+				((_x select 1) select 2) + (_position select 2) 
+			];
+		} else {
+			_object setPosATL [
+				((_x select 1) select 0) + (_position select 0),
+				((_x select 1) select 1) + (_position select 1),
+				((_x select 1) select 2) + (_position select 2) 
+			];
+		};
+		[_object, (_x select 3), _newDir] call fn_BCRotateVector;
 		_object attachTo [player];
-		_object setDir ((_x select 2) - getDir player);
-
+		
+		/*
 		if (count _x == 4) then {
 			_orig_obj = _x select 3;
 			_object setVariable ["CharacterID", _orig_obj getVariable ["CharacterID", ""], true];
 		};
-
+		*/
 		if (!isNil "_player") then {
 			_object setVariable ["CharacterID", (_player getVariable ["CharacterID","0"]), true];
 		};
@@ -1645,9 +1590,15 @@ fn_BCBuildbase = {
 				private ["_obj_direction", "_position"];
 				detach _x;
 				_obj_direction = getDir _x;
-				_position = getPosASL _x;
+				//_position = getPosASL _x;
+				_position = [_x] call FNC_getPos;
 				_position set [2, (_position select 2) + (if (DZE_Q) then {0.5} else {-0.5})];
-				_x setPosASL _position;
+				//_x setPosASL _position;
+				if (surfaceIsWater _position) then {
+					_x setPosASL _position;
+				} else {
+					_x setPosATL _position;
+				};
 				_x attachTo [player];
 				_x setDir (_obj_direction - _player_direction);
 				true
@@ -1661,7 +1612,8 @@ fn_BCBuildbase = {
 			{
 				private ["_position", "_obj_direction", "_dif_direction", "_new_direction", "_distance", "_rotated_position"];
 				detach _x;
-				_position = getPosASL _x;
+				//_position = getPosASL _x;
+				_position = [_x] call FNC_getPos;
 				_obj_direction = ([_center_position, _position] call BIS_fnc_dirTo);
 				_dif_direction = if (DZE_4) then {10} else {-10};
 				_new_direction = _obj_direction + _dif_direction;
@@ -1669,7 +1621,12 @@ fn_BCBuildbase = {
 				_obj_direction = getDir _x;
 				_rotated_position = [_center_position, _distance, _new_direction] call BIS_fnc_relPos;
 				_rotated_position set [2, _position select 2];
-				_x setPosASL _rotated_position;
+				//_x setPosASL _rotated_position;
+				if (surfaceIsWater _position) then {
+					_x setPosASL _rotated_position;
+				} else {
+					_x setPosATL _rotated_position;
+				};
 				_x attachTo [player];
 				_x setDir (((_obj_direction - _player_direction) + _dif_direction) % 360);
 				true
@@ -3586,9 +3543,8 @@ EAT_TpToPlayer = {
 
 // Toggles Individual Functions on and off
 EAT_ScriptToggle = {
-	private ["_toggle","_function"];
-	_toggle = _this select 0;
-	_function = _this select 1;
+	local _toggle = _this select 0;
+	local _function = _this select 1;
 	_toggle = !_toggle;
 	[_toggle] call _function;
 	_toggle

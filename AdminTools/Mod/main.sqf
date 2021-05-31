@@ -104,8 +104,8 @@ EAT_ToolsMain = {
 		EAT_primaryWeaponMenu = EAT_primaryWeaponMenu + [["AKM Kobra", [],"", -5, [["expression",'["AKM_Kobra_DZ","30Rnd_762x39_AK47"] call EAT_AddWeapon;']], "1", "1"]];
 		EAT_primaryWeaponMenu = EAT_primaryWeaponMenu + [["FN FAL", [],"", -5, [["expression",'["FNFAL_CCO_DZ","20Rnd_762x51_FNFAL"] call EAT_AddWeapon;']], "1", "1"]];
 		EAT_primaryWeaponMenu = EAT_primaryWeaponMenu + [["Mk 48", [],"", -5, [["expression",'["Mk48_CCO_DZ","100Rnd_762x51_M240"] call EAT_AddWeapon;']], "1", "1"]];
-		//EAT_primaryWeaponMenu = EAT_primaryWeaponMenu + [["AS50", [],"", -5, [["expression",'["BAF_AS50_scoped","5Rnd_127x99_AS50"] call EAT_AddWeapon;']], "1", "1"]];
-		EAT_primaryWeaponMenu = EAT_primaryWeaponMenu + [[".338 LAPUA", [],"", -5, [["expression",'["BAF_LRR_scoped","5Rnd_86x70_L115A1"] call EAT_AddWeapon;']], "1", "1"]];
+		EAT_primaryWeaponMenu = EAT_primaryWeaponMenu + [["MK14 Sniper SD", [],"", -5, [["expression",'["MK14_Sniper_SD_DZ","20Rnd_762x51_DMRSD"] call EAT_AddWeapon;']], "1", "1"]];
+		EAT_primaryWeaponMenu = EAT_primaryWeaponMenu + [[".338 LAPUA", [],"", -5, [["expression",'["L115A3_2_DZ","5Rnd_86x70_L115A1"] call EAT_AddWeapon;']], "1", "1"]];
 		EAT_primaryWeaponMenu = EAT_primaryWeaponMenu + [["DMR_DZ", [],"", -5, [["expression",'["DMR_DZ","20Rnd_762x51_DMR"] call EAT_AddWeapon;']], "1", "1"]];
 		EAT_primaryWeaponMenu = EAT_primaryWeaponMenu + [["", [], "", -5,[["expression", ""]], "1", "0"]];
 		EAT_primaryWeaponMenu = EAT_primaryWeaponMenu + [["Secondary Weapons", [], "#USER:EAT_secondaryWeaponMenu", -5, [["expression", ""]], "1", "1"]];
@@ -115,7 +115,7 @@ EAT_ToolsMain = {
 		EAT_secondaryWeaponMenu = EAT_secondaryWeaponMenu + [["-- Secondary Weapons --", [], "", -5,[["expression", ""]], "1", "0"]];
 		EAT_secondaryWeaponMenu = EAT_secondaryWeaponMenu + [["PDW SD", [],"", -5, [["expression",'["UZI_SD_EP1","30Rnd_9x19_UZI_SD"] call EAT_AddWeapon;']], "1", "1"]];
 		EAT_secondaryWeaponMenu = EAT_secondaryWeaponMenu + [["PDW", [],"", -5, [["expression",'["PDW_DZ","30Rnd_9x19_UZI"] call EAT_AddWeapon;']], "1", "1"]];
-		EAT_secondaryWeaponMenu = EAT_secondaryWeaponMenu + [["Glock", [],"", -5, [["expression",'["G17_FL_DZ","17Rnd_9x19_glock17"] call EAT_AddWeapon;']], "1", "1"]];
+		EAT_secondaryWeaponMenu = EAT_secondaryWeaponMenu + [["M9 SD Camo", [],"", -5, [["expression",'["M9_Camo_SD_DZ","15Rnd_9x19_M9SD"] call EAT_AddWeapon;']], "1", "1"]];
 		EAT_secondaryWeaponMenu = EAT_secondaryWeaponMenu + [["M9_DZ SD", [],"", -5, [["expression",'["M9_SD_DZ","15Rnd_9x19_M9SD"] call EAT_AddWeapon;']], "1", "1"]];
 		EAT_secondaryWeaponMenu = EAT_secondaryWeaponMenu + [["Makarov_DZ", [],"", -5, [["expression",'["Makarov_DZ","8Rnd_9x18_Makarov"] call EAT_AddWeapon;']], "1", "1"]];
 		EAT_secondaryWeaponMenu = EAT_secondaryWeaponMenu + [["Makarov_DZ SD", [],"", -5, [["expression",'["Makarov_SD_DZ","8Rnd_9x18_Makarov"] call EAT_AddWeapon;']], "1", "1"]];
@@ -127,9 +127,9 @@ EAT_ToolsMain = {
 		EAT_gearMenu = EAT_gearMenu + [["-- Gear Menu --", [], "", -5,[["expression", ""]], "1", "0"]];
 		EAT_gearMenu = EAT_gearMenu + [["ToolBelt gear", [],"", -5, [["expression","call EAT_AddTools;"]], "1", "1"]];
 		EAT_gearMenu = EAT_gearMenu + [["Medical gear", [],"", -5, [["expression","call EAT_AddMeds;"]], "1", "1"]];
-		EAT_gearMenu = EAT_gearMenu + [["Alice Pack", [],"", -5, [["expression",'["DZ_ALICE_Pack_EP1"] call EAT_AddBackPack;']], "1", "1"]];
-		EAT_gearMenu = EAT_gearMenu + [["Coyote Pack", [],"", -5, [["expression",'["DZ_Backpack_EP1"] call EAT_AddBackPack;']], "1", "1"]];
-		EAT_gearMenu = EAT_gearMenu + [["Large Gun Bag", [],"", -5, [["expression",'["DZ_LargeGunBag_EP1"] call EAT_AddBackPack;']], "1", "1"]];
+		EAT_gearMenu = EAT_gearMenu + [["Alice Pack", [],"", -5, [["expression",'["ALICE_Pack_DZE2"] call EAT_AddBackPack;']], "1", "1"]];
+		EAT_gearMenu = EAT_gearMenu + [["Coyote Pack", [],"", -5, [["expression",'["CoyoteBackpack_DZE2"] call EAT_AddBackPack;']], "1", "1"]];
+		EAT_gearMenu = EAT_gearMenu + [["Large Gun Bag", [],"", -5, [["expression",'["LargeGunBag_DZE2"] call EAT_AddBackPack;']], "1", "1"]];
 		EAT_gearMenu = EAT_gearMenu + [["", [], "", -5,[["expression", ""]], "1", "0"]];
 		EAT_gearMenu = EAT_gearMenu + [["Main Menu", [20], "#USER:EAT_mainMenu", -5, [["expression", ""]], "1", "1"]];
 		
@@ -137,13 +137,12 @@ EAT_ToolsMain = {
 		[
 			["",true],
 			["-- Admin Loadout Menu --", [], "", -5, [["expression", ""]], "1", "0"],
-			["DMR",[],"",-5,[["expression", "['DMR_DZ','M9_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
-			["Lapua",[],"",-5,[["expression", "['BAF_LRR_scoped','M9_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
-			["Mk48 CCO",[],"",-5,[["expression", "['Mk48_CCO_DZ','M9_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
-			//["M107",[],"",-5,[["expression", "['M107_DZ','M9_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
-			//["AS50",[],"",-5,[["expression", "['BAF_AS50_scoped','M9_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
-			["FN FAL CCO",[],"",-5,[["expression", "['FNFAL_CCO_DZ','M9_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
-			["Sa58 ACOG",[],"",-5,[["expression", "['Sa58V_RCO_EP1','M9_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
+			["DMR",[],"",-5,[["expression", "['DMR_DZ','M9_Camo_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
+			["Lapua",[],"",-5,[["expression", "['BAF_LRR_scoped','M9_Camo_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
+			["Mk48 CCO",[],"",-5,[["expression", "['Mk48_CCO_DZ','M9_Camo_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
+			["MK14 Sniper SD",[],"",-5,[["expression", "['MK14_Sniper_SD_DZ','M9_Camo_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
+			["FN FAL CCO",[],"",-5,[["expression", "['FNFAL_CCO_DZ','M9_Camo_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
+			["Sa58 ACOG",[],"",-5,[["expression", "['Sa58V_RCO_EP1','M9_Camo_SD_DZ'] call EAT_Loadouts;"]],"1","1"],
 			["", [], "", -5, [["expression", ""]], "1", "0"],
 			["Main Menu", [20], "#USER:EAT_mainMenu", -5, [["expression", ""]], "1", "1"]
 		];

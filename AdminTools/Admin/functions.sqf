@@ -234,7 +234,7 @@ EAT_Loadouts = {
 	removeAllItems _player;
 	removeBackpack _player;
 
-	_player addBackpack "DZ_Backpack_EP1";
+	_player addBackpack "CoyoteBackpack_DZE2";
 
 	{
 		_player addMagazine _x;
@@ -905,41 +905,27 @@ EAT_Lock = {
 };
 
 EAT_Repair = {
-	private ["_configVeh","_capacity","_vehicle","_type","_name","_hitpoints","_player","_strH"];
-
-	_vehicle = cursorTarget;
-	_type = typeOf _vehicle;
-	_configVeh = configFile >> "cfgVehicles" >> _type;
-	_capacity = getNumber(_configVeh >> "fuelCapacity");
-	_name = getText(configFile >> "cfgVehicles" >> _type >> "displayName");
-	_player = player;
-
+	local _vehicle = cursorTarget;
 	if (isNull _vehicle) exitWith {"No target" call dayz_rollingMessages;};
 
-	_hitpoints = _vehicle call vehicle_getHitpoints;
 	{
-		private ["_damage","_selection"];
-		_damage = [_vehicle,_x] call object_getHit;
-
-		if (_damage > 0) then {
-			_vehicle setVariable[_strH,0,true];
+		local _damage = [_vehicle,_x] call object_getHit;
+		if ((_damage select 0) > 0) then {
+			[_vehicle, (_damage select 1), 0, true] call fnc_veh_handleRepair;
 		};
-	} forEach _hitpoints;
-
+	} forEach (_vehicle call vehicle_getHitpoints);
+		
 	if (local _vehicle) then {
-		[_vehicle,_capacity] call local_setFuel;
+		[_vehicle,1] call local_setFuel;
 	} else {
-		PVDZ_send = [_vehicle,"SetFuel",[_vehicle,_capacity]];
+		PVDZ_send = [_vehicle,"SetFuel",[_vehicle,1]];
 		publicVariableServer "PVDZ_send";
 	};
 
-	PVDZ_veh_Save = [_vehicle,"repair"];
-	publicVariableServer "PVDZ_veh_Save";
-
-	format["%1 Repaired and Refueled", _name] call dayz_rollingMessages;
+	format["%1 Repaired and Refueled", (getText(configFile >> "cfgVehicles" >> (typeOf _vehicle) >> "displayName"))] call dayz_rollingMessages;
 
 	// Tool use logger
-	if(EAT_logMinorTool) then {format["%1 %2 -- has repaired %3",name _player,getPlayerUID _player,_vehicle] call EAT_Logger;};
+	if(EAT_logMinorTool) then {format["%1 %2 -- has repaired %3",name player,getPlayerUID player,_vehicle] call EAT_Logger;};
 };
 
 EAT_Unlock = {

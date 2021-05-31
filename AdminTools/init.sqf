@@ -1,6 +1,6 @@
 // Add UIDs and names of Admins and Mods Here. If an admin or mod wants to play with no admin tools, change name in profile.
-//#define SUPER_ADMIN_LIST ["76500000000000000","76500000000000000","76500000000000000"]
-//#define SUPER_ADMIN_NAMES ["SuperAdminName","SuperAdminName","SuperAdminName"]
+#define SUPER_ADMIN_LIST ["76500000000000000","76500000000000000","76500000000000000"]
+#define SUPER_ADMIN_NAMES ["SuperAdminName","SuperAdminName","SuperAdminName"]
 #define ADMIN_LIST ["76500000000000000","76500000000000000","76500000000000000"]
 #define ADMIN_NAMES ["AdminName","AdminName","AdminName"]
 #define MOD_LIST ["76500000000000000","76500000000000000","76500000000000000"]
@@ -86,26 +86,32 @@ EAT_aiDeleteTimer = 600;
 		};
 		// Have the server spawn the transparent red globes to avoid BattlEye kicks
 		if (_type == "Base Manager") exitWith {
-			_radius = _params select 0;
-			_center = _params select 1;
-			_pos = _params select 2;
+			local _radius = _params select 0;
+			local _center = _params select 1;
+			local _pos = _params select 2;
 			
 			_exitReason = [_this,"Base Manager",_pos,_clientKey,_playerUID,_activatingPlayer] call server_verifySender;
 			if (_exitReason != "") exitWith {diag_log _exitReason};
 			
-			[_radius,_center] spawn {
-				private ["_obj","_center","_a","_b","_radius","_angle","_count","_objects"];
+			[_radius,_center, _pos] spawn {
+				private ["_obj","_center","_a","_b","_radius","_angle","_count","_objects","_isWater"];
 				_radius = _this select 0;
 				_center = _this select 1;
 				_angle = 0;
 				_count = round((2 * pi * _radius) / 2);
 				_objects = [];
+				_isWater = surfaceIsWater (_this select 2);
 				for "_x" from 0 to _count do
 				{
 					_a = (_center select 0) + (sin(_angle)*_radius);
 					_b = (_center select 1) + (cos(_angle)*_radius);
 					_obj = "Sign_sphere100cm_EP1" createVehicle [0,0,0];
-					_obj setPosASL [_a, _b, _center select 2];
+					if (_isWater) then {
+						_obj setPosASL [_a, _b, _center select 2];
+					} else {
+						_obj setPosATL [_a, _b, _center select 2];
+					};
+					//_obj setPosASL [_a, _b, _center select 2];
 					_objects set [count _objects, _obj];
 					_angle = _angle + (360/_count);
 				};
@@ -115,7 +121,12 @@ EAT_aiDeleteTimer = 600;
 					_a = (_center select 0) + (sin(_angle)*_radius);
 					_b = (_center select 2) + (cos(_angle)*_radius);
 					_obj = "Sign_sphere100cm_EP1" createVehicle [0,0,0];
-					_obj setPosASL [_a, _center select 1, _b];
+					//_obj setPosASL [_a, _center select 1, _b];
+					if (_isWater) then {
+						_obj setPosASL [_a, _center select 1, _b];
+					} else {
+						_obj setPosATL [_a, _center select 1, _b];
+					};
 					_objects set [count _objects, _obj];
 					_angle = _angle + (360/_count);
 				};
@@ -125,7 +136,12 @@ EAT_aiDeleteTimer = 600;
 					_a = (_center select 1) + (sin(_angle)*_radius);
 					_b = (_center select 2) + (cos(_angle)*_radius);
 					_obj = "Sign_sphere100cm_EP1" createVehicle [0,0,0];
-					_obj setPosASL [_center select 0, _a, _b];
+					//_obj setPosASL [_center select 0, _a, _b];
+					if (_isWater) then {
+						_obj setPosASL [_center select 0, _a, _b];
+					} else {
+						_obj setPosATL [_center select 0, _a, _b];
+					};
 					_objects set [count _objects, _obj];
 					_angle = _angle + (360/_count);
 				};
